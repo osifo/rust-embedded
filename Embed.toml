@@ -1,0 +1,2 @@
+[default.general]
+chip = "nrf52833_xxAA" # uncomment this line for micro:bit V2

@@ -1,0 +1,2 @@
+cargo:rustc-link-search=/Users/mac/work/study/rust-embedded/ch03/target/thumbv7em-none-eabihf/debug/build/rtt-check-551765dbd997fccf/out
+cargo:rerun-if-changed=memory.x
