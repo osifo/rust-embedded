@@ -1,1 +1,0 @@
-/Users/mac/work/study/rust-embedded/ch03/target/thumbv7em-none-eabihf/debug/rtt-check: /Users/mac/work/study/rust-embedded/ch03/build.rs /Users/mac/work/study/rust-embedded/ch03/memory.x /Users/mac/work/study/rust-embedded/ch03/src/main.rs
