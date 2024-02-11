@@ -8,4 +8,4 @@ halt_afterwards = true
 enabled = false
 
 [default.gdb]
-enabled =v true
+enabled = true
