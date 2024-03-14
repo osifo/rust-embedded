@@ -1,4 +1,5 @@
 use core::fmt;
+
 use embedded_hal::blocking::serial as bserial;
 use embedded_hal::serial;
 use microbit::hal::uarte::{Error, Instance, Uarte, UarteRx, UarteTx};
