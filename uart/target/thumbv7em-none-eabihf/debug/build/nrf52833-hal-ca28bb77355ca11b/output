@@ -1,0 +1,3 @@
+cargo:rustc-link-search=/Users/mac/work/study/rust-embedded/uart/target/thumbv7em-none-eabihf/debug/build/nrf52833-hal-ca28bb77355ca11b/out
+cargo:rerun-if-changed=build.rs
+cargo:rerun-if-changed=memory.x

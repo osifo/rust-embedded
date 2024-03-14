@@ -1,0 +1,11 @@
+/Users/mac/work/study/rust-embedded/uart/target/thumbv7em-none-eabihf/debug/deps/libtiny_led_matrix-33c89f22153f52c5.rmeta: /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/lib.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/control.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/display.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/timer.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/render.rs
+
+/Users/mac/work/study/rust-embedded/uart/target/thumbv7em-none-eabihf/debug/deps/libtiny_led_matrix-33c89f22153f52c5.rlib: /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/lib.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/control.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/display.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/timer.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/render.rs
+
+/Users/mac/work/study/rust-embedded/uart/target/thumbv7em-none-eabihf/debug/deps/tiny_led_matrix-33c89f22153f52c5.d: /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/lib.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/control.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/display.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/timer.rs /Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/render.rs
+
+/Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/lib.rs:
+/Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/control.rs:
+/Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/display.rs:
+/Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/timer.rs:
+/Users/mac/.cargo/registry/src/index.crates.io-6f17d22bba15001f/tiny-led-matrix-1.0.2/src/render.rs:

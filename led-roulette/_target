@@ -1,1 +1,1 @@
-create a dir name target. it is required for cargo build to run.
+create a dir named target. it is required for cargo build to run.

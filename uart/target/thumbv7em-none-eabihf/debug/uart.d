@@ -1,0 +1,1 @@
+/Users/mac/work/study/rust-embedded/uart/target/thumbv7em-none-eabihf/debug/uart: /Users/mac/work/study/rust-embedded/uart/build.rs /Users/mac/work/study/rust-embedded/uart/memory.x /Users/mac/work/study/rust-embedded/uart/src/main.rs /Users/mac/work/study/rust-embedded/uart/src/serial_setup.rs

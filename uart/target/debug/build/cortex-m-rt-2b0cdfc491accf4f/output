@@ -1,0 +1,3 @@
+cargo:rustc-link-search=/Users/mac/work/study/rust-embedded/uart/target/debug/build/cortex-m-rt-2b0cdfc491accf4f/out
+cargo:rerun-if-changed=build.rs
+cargo:rerun-if-changed=link.x.in
