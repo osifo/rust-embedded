@@ -5,6 +5,7 @@ use cortex_m_rt::entry;
 use rtt_target::rtt_init_print;
 use panic_rtt_target as _;
 use core::fmt::Write;
+use heapless::Vec;
 
 
 #[cfg(feature = "v2")]
@@ -37,14 +38,25 @@ fn main() -> ! {
     UartePort::new(serial) // there should be no semicolon here because of the implicit return.
   };
 
-  write!(serial, "Welcome to bare metal programming in rust\r\n").unwrap();
-  nb::block!(serial.write(b'X')).unwrap();
-  nb::block!(serial.flush()).unwrap();
+  let mut buffer: Vec<char, 32> = Vec::new();
 
   loop {
-    let input_byte  = nb::block!(serial.read()).unwrap();
+    let input_byte: u8  = nb::block!(serial.read()).unwrap();
 
-    write!(serial, "{}", input_byte as char);
-    nb::block!(serial.flush()).unwrap();
+    if input_byte == 13 {
+      buffer.reverse(); 
+      write!(serial, "\n\n\rThe reversed is: ");
+
+      for xter in buffer.iter() {
+        write!(serial, "{}",  &xter);
+      }
+
+      write!(serial, "\n\n\r");
+      buffer.clear();
+    }
+
+    buffer.push(input_byte as char);
+      write!(serial, "{}", input_byte as char);
+    
   }
 }
