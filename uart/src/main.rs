@@ -41,5 +41,10 @@ fn main() -> ! {
   nb::block!(serial.write(b'X')).unwrap();
   nb::block!(serial.flush()).unwrap();
 
-  loop {}
+  loop {
+    let input_byte  = nb::block!(serial.read()).unwrap();
+
+    write!(serial, "{}", input_byte as char);
+    nb::block!(serial.flush()).unwrap();
+  }
 }
