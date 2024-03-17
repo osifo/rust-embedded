@@ -52,31 +52,37 @@ fn main() -> ! {
   sensor.set_mag_odr(MagOutputDataRate::Hz50).unwrap();
   let mut sensor = sensor.into_mag_continuous().ok().unwrap();
 
-  write!(serial, "\r\nEnter 'acc'/'mag' for accelerometer/magnetometer value:\r\n");
+  write!(serial, "\r\nEnter 'acc'/'mag' for accelerometer/magnetometer value:\r\n").unwrap();
 
   loop {
     let input_byte: u8 = nb::block!(serial.read()).unwrap();
-    input_buffer.push(input_byte);
+
+    if input_buffer.push(input_byte).is_err() {
+      write!(serial, "error: buffer is full!\r\n").unwrap();
+      // break;
+    }
     
     if input_byte == 13 { // if the return key is pressed
-      write!(serial, "\r\n");
+      write!(serial, "\r\n").unwrap();
       let prompt =  str::from_utf8(&input_buffer).unwrap();
 
       // gets the sensor reference
       if prompt.trim() == "acc"  {
         if sensor.accel_status().unwrap().xyz_new_data {
           let accel_data =  sensor.accel_data().unwrap();
-          write!(serial, "{} values are - x: {}, y: {}, z: {}\r\n", prompt.trim(), accel_data.x, accel_data.y, accel_data.z);
+          write!(serial, "{} values are - x: {}, y: {}, z: {}\r\n", prompt.trim(), accel_data.x, accel_data.y, accel_data.z).unwrap();
         }
       } else if prompt.trim() == "mag" {
         if sensor.mag_status().unwrap().xyz_new_data {
           let sensor_data =  sensor.mag_data().unwrap();
-          write!(serial, "{} values are - x: {}, y: {}, z: {}\r\n", prompt.trim(), sensor_data.x, sensor_data.y, sensor_data.z);
+          write!(serial, "{} values are - x: {}, y: {}, z: {}\r\n", prompt.trim(), sensor_data.x, sensor_data.y, sensor_data.z).unwrap();
           // write!(serial, "{} - {:?} \n\r", prompt, sensor_data);
         }
       } else {
-        write!(serial, "An invalid prompt string - {} - was detected.\r\n", prompt);
+        write!(serial, "\r\nAn invalid prompt string - {} - was detected.\r\n", prompt).unwrap();
+        // break;
       }
+
       input_buffer.clear();
     } else {
       write!(serial,"{}", input_byte as char);
