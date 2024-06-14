@@ -3,7 +3,6 @@
 #![no_std]
 
 use cortex_m_rt::entry;
-use libm::atan;
 use lsm303agr::Measurement;
 use panic_rtt_target as _;
 use rtt_target::{rprintln, rtt_init_print};
@@ -11,13 +10,14 @@ use rtt_target::{rprintln, rtt_init_print};
 mod calibration;
 use crate::calibration::calc_calibration;
 use crate::calibration::calibrated_measurement;
-use microbit::{display::blocking::Display, hal::Timer, hal::prelude::*};
+use microbit::{display::blocking::Display, hal::Timer};
 
-// #[cfg(feature = "v2")]
-use microbit::{hal::twim, pac::twim0::frequency::FREQUENCY_A};
+#[cfg(feature = "v2")]
+use microbit::{
+  hal::twim, 
+  pac::twim0::frequency::FREQUENCY_A
+};
 use lsm303agr::{AccelOutputDataRate, Lsm303agr, MagOutputDataRate};
-use libm::atan2f;
-use core::f32::consts::PI;
 
 mod led;
 use crate::led::Direction;
@@ -27,7 +27,6 @@ use crate::led::direction_to_led;
 fn main() -> ! {
     rtt_init_print!();
     let board = microbit::Board::take().unwrap();
-
 
     #[cfg(feature = "v2")]
     let i2c = { twim::Twim::new(board.TWIM0, board.i2c_internal.into(), FREQUENCY_A::K100) };
@@ -48,39 +47,28 @@ fn main() -> ! {
         while !sensor.mag_status().unwrap().xyz_new_data {}
         let mut mag_data = sensor.mag_data().unwrap();
         let data = calibrated_measurement(mag_data, &calibration);
-        // let data =  Measurement {x: 409073, y: 439562, z: -697027};
-        let x = data.x as f32;
-        let y = data.y as f32;
-        let z = data.z as f32;
+        // data =  Measurement {x: 409073, y: 439562, z: -697027};
+        
+        // let direction: Direction = match (data.x > 0, data.y > 0) {
+        //   (true, true) => Direction::NorthWest,
+        //   (false, false) => Direction::SouthEast,
+        //   (true, false) => Direction::SouthWest,
+        //   (false, true) => Direction::NorthEast,
+        // };
 
-        let theta = atan2f(x, y);
-        let magnitude = x*x + y*y + z*z;
+        let mut direction = Direction::North; 
 
-        let direction = if theta < -7. * PI / 8. {
-            Direction::West
-        } else if theta < -5. * PI / 8. {
-            Direction::SouthWest
-        } else if theta < -3. * PI / 8. {
-            Direction::South
-        } else if theta < -PI / 8. {
-            Direction::SouthEast
-        } else if theta < PI / 8. {
-            Direction::East
-        } else if theta < 3. * PI / 8. {
-            Direction::NorthEast
-        } else if theta < 5. * PI / 8. {
-            Direction::North
-        } else if theta < 7. * PI / 8. {
-            Direction::NorthWest
-        } else {
-            Direction::West
-        };
+        direction = if data.x > 0 && data.y > 0 { Direction::NorthWest } 
+        else if data.x == 0 && data.y < 0 { Direction::South }
+        else if data.x < 0 && data.y == 0 { Direction::East }
+        else if data.x < 0 && data.y < 0 { Direction::SouthEast }
+        else if data.x > 0 && data.y == 0 { Direction::West }
+        else if data.x > 0 && data.y < 0 { Direction::SouthWest }
+        else if data.x == 0 && data.y > 0 { Direction::North }
+        else { Direction::NorthEast };
+        // else if data.x < 0 && data.y > 0 { Direction::NorthEast }
 
         display.show(&mut timer, direction_to_led(direction), 100);
-
-        rprintln!("theta degrees ====== {}", theta * (180.0 / PI));
-        rprintln!("magnitude ====== {}", magnitude);
-        timer.delay_ms(1_000_u32)
-
+        // timer.delay_ms(1_000_u32)
     }
 }
