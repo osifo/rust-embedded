@@ -64,6 +64,6 @@ fn main() -> ! {
             }
         }
 
-        timer.delay_ms(500_u32);
+        timer.delay_ms(1_000_u32);
     }
 }
