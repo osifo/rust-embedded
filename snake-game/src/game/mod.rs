@@ -1,4 +1,4 @@
-mod utils;
+pub mod utils;
 mod snake;
 
 use heapless::FnvIndexSet;
@@ -17,7 +17,7 @@ pub(crate) struct Game {
 
 impl Game {
     pub(crate) fn new(rng_seed: u32) -> Self {
-        let mut rng = Pring::new(rng_seed);
+        let mut rng = Prng::new(rng_seed);
 
         // TODO -  i don't think this tail logic here is needed.
         let mut tail: FnvIndexSet<Coords, 32> =  FnvIndexSet::new();
@@ -28,7 +28,6 @@ impl Game {
 
         Self {
             rng,
-            tail,
             snake,
             food_coords,
             speed: 1,
@@ -72,7 +71,6 @@ impl Game {
             Direction::Down => Coords { row: head.row + 1, col: head.col },
             Direction::Left => Coords { row: head.row, col: head.col - 1 },
             Direction::Right => Coords { row: head.row, col: head.col + 1 },
-            _ => ()
         };
 
         if next_move.is_out_of_bounds() {
@@ -88,25 +86,25 @@ impl Game {
         if self.snake.body_coords.contains(&next_move) {
             if next_move == *self.snake.tail.peek().unwrap() {
                 // this means that the next move would be the immediate former tail, so no collision
-                StepOutcome::MoveOnly(next_move);
+                StepOutcome::MoveOnly(next_move)
             } else {
-                StepOutcome::Collision(next_move);
+                StepOutcome::Collision(next_move)
             }
         } else if next_move == self.food_coords {
             if self.snake.tail.len() == 23 { // the slack has reached it's max growth
                 StepOutcome::Full(next_move)
             } else {
-                StepOutcome::Eat(next_move);
+                StepOutcome::Eat(next_move)
             }
         } else {
-            StepOutcome::MoveOnly(next_move);
+            StepOutcome::MoveOnly(next_move)
         }
     }
 
     fn execute_move(&mut self, next_move_outcome: StepOutcome) {
         self.status = match next_move_outcome {
-            StepOutcome::Full() => GameStatus::Won,
-            StepOutcome::Collision() => GameStatus::Lost,
+            StepOutcome::Full(_) => GameStatus::Won,
+            StepOutcome::Collision(_) => GameStatus::Lost,
             StepOutcome::Eat(coords) => {
                 self.snake.move_snake(coords, true);
                 self.score += 1;
@@ -137,7 +135,7 @@ impl Game {
         if interval < 200 { 
             200u32
         } else {
-            result as u32
+            interval as u32
         }
     }
 
@@ -148,8 +146,8 @@ impl Game {
         food_brightness: u8,
     ) -> [[u8; 5]; 5] {
         let mut board_leds = [[0u8; 5]; 5];
-        board_leds[self.snake.head.row as usize][[self.snake.head.col as usize]] = head_brightness;
-        for cell in self.snake.tail {
+        board_leds[self.snake.head.row as usize][self.snake.head.col as usize] = head_brightness;
+        for cell in &self.snake.tail {
             board_leds[cell.row as usize][cell.col as usize] = tail_brightness;
         }
         board_leds[self.food_coords.row as usize][self.food_coords.col as usize] = food_brightness;
@@ -157,7 +155,7 @@ impl Game {
         board_leds
     }
 
-    pub(crate) fn score_matrix() -> [[u8; 5]; 5] {
+    pub(crate) fn score_matrix(&self) -> [[u8; 5]; 5] {
         let mut board_leds = [[0u8; 5]; 5];
         let score_rows =  (self.score as usize) / 5;
         let score_cols = (self.score as usize) % 5;
@@ -167,9 +165,9 @@ impl Game {
         }
 
         for col in 0..score_cols {
-            board_leds[score_rows][col] = 1
+            board_leds[score_rows][col] = 1;
         }
 
-        board_leds;
+        board_leds
     }
 }

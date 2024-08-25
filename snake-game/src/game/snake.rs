@@ -1,17 +1,18 @@
-mod utils;
+
 
 use heapless::spsc::Queue;
-use utils::{Coords, Direction};
+use heapless::FnvIndexSet;
+use super::utils::{Coords, Direction, Turn};
 
 pub struct Snake {
-    head: Coords,
-    tail: Queue<Coords, 32>,
-    body_coords: FnvIndexSet<Coords, 32>,
-    direction: Direction
+    pub head: Coords,
+    pub tail: Queue<Coords, 32>,
+    pub body_coords: FnvIndexSet<Coords, 32>,
+    pub direction: Direction
 }
 
 impl Snake {
-    fn new() -> Self {
+    pub fn new() -> Self {
         let head = Coords { row: 2, col: 2 };
         let initial_tail = Coords { row: 2, col: 1 };
         let mut tail = Queue::new();
@@ -29,13 +30,13 @@ impl Snake {
         }
     }
 
-    fn move_snake(&mut self, to_coords: Coords, extend: bool) {
+    pub fn move_snake(&mut self, to_coords: Coords, extend: bool) {
         self.tail.enqueue(self.head).unwrap();
         self.head = to_coords;
         self.body_coords.insert(to_coords).unwrap();
 
         if !extend {
-            let back = self.tail.dequeue.unwrap();
+            let back = self.tail.dequeue().unwrap();
             self.body_coords.remove(&back);
         }
     }
@@ -58,7 +59,7 @@ impl Snake {
         }
     }
 
-    fn make_turn(&mut self, direction: Direction) {
+    pub fn make_turn(&mut self, direction: Turn) {
         match direction {
             Turn::Left => self.turn_left(),
             Turn::Right => self.turn_right(),

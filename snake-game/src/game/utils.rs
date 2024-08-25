@@ -1,13 +1,13 @@
 use heapless::FnvIndexSet;
 
-enum Direction {
+pub enum Direction {
     Up,
     Down,
     Left,
     Right
 }
 
-enum StepOutcome {
+pub enum StepOutcome {
     Full(Coords),
     Eat(Coords),
     Collision(Coords),
@@ -28,15 +28,14 @@ pub enum GameStatus {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-struct Coords {
+pub struct Coords {
     // signed integers allow for negative values
-    rows: i8,
-    col: i8,
-    is_out_of_bounds: bool
+    pub row: i8,
+    pub col: i8,
 }
 
 impl Coords {
-    fn random(range: &mut Prng, exclude: Option<&FnvIndexSet<Coords, 32>>) -> Self {
+    pub fn random(range: &mut Prng, exclude: Option<&FnvIndexSet<Coords, 32>>) -> Self {
         let mut coords = Coords {
             row: ((range.random_u32() as usize) % 5) as i8,
             col: ((range.random_u32() as usize) % 5) as i8
@@ -52,28 +51,30 @@ impl Coords {
         coords
     }
 
-    fn is_out_of_bounds(&self) ->  bool {
+    pub fn is_out_of_bounds(&self) ->  bool {
         self.row < 0 || self.row > 4 || self.col < 0 || self.col > 4
     }
 }
 
-struct Prng {
-    value: u32
+pub struct Prng {
+    pub value: u32
 }
 
 impl Prng {
-    fn new(seed: u32) -> Self {
+    pub fn new(seed: u32) -> Self {
         Self {value: seed}
     }
 
-    fn xorshift32(mut input: u32) -> u32 {
+    fn xorshift32(&self, mut input: u32) -> u32 {
         input ^= input << 13;
         input ^= input >> 17;
         input ^= input << 5;
+
+        input 
     }
     
     fn random_u32(&mut self) -> u32 {
-        self.value = Self.xorshift32(self.value);
+        self.value = self.xorshift32(self.value);
         self.value
     }
 }
