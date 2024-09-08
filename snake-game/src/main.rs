@@ -19,11 +19,11 @@ use microbit::{
 fn main() -> ! {
     rtt_init_print!();
 
-    let mut board = Board::take::unwrap();
-    let mut timer = Timer::new(board.timer);
+    let mut board = Board::take().unwrap();
+    let mut timer = Timer::new(board.TIMER0);
     let mut rng = Rng::new(board.RNG);
     let mut game = Game::new(rng.random_u32());
-    let mut display = Display::new(board.displa_pins);
+    let mut display = Display::new(board.display_pins);
 
     loop {
         // general application loop
