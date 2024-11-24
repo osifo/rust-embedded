@@ -7,7 +7,9 @@ use cortex_m_rt::entry;
 use rtt_target::rtt_init_print;
 use panic_rtt_target as _;
 use crate::game::Game;
-use game::utils::{GameStatus, Turn};
+use game::utils::GameStatus;
+use game::controls::get_turn;
+use crate::game::controls::init_buttons;
 
 use microbit::{
     Board,
@@ -25,6 +27,8 @@ fn main() -> ! {
     let mut game = Game::new(rng.random_u32());
     let mut display = Display::new(board.display_pins);
 
+    init_buttons(board.GPIOTE, board.buttons);
+
     loop {
         // general application loop
         loop {
@@ -35,7 +39,7 @@ fn main() -> ! {
             display.show(&mut timer, image, game.calc_step_interval());
 
             match game.status {
-                GameStatus::Ongoing => game.step(Turn::None),
+                GameStatus::Ongoing => game.step(get_turn(true)),
                 _ => {
                     //handles won or lost scenarios
                     for _ in 0..3 {
