@@ -394,6 +394,7 @@ dependencies = [
  "microbit-v2",
  "panic-rtt-target",
  "rtt-target",
+ "tiny-led-matrix",
 ]
 
 [[package]]

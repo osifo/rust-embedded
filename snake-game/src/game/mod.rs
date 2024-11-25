@@ -1,5 +1,6 @@
 pub mod utils;
 pub mod controls;
+pub mod display;
 mod snake;
 
 use heapless::FnvIndexSet;

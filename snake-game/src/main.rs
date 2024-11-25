@@ -10,11 +10,12 @@ use crate::game::Game;
 use game::utils::GameStatus;
 use game::controls::get_turn;
 use crate::game::controls::init_buttons;
+use crate::game::display::{init_display, display_image, clear_display};
 
 use microbit::{
     Board,
     hal::{prelude::*, Rng, Timer},
-    display::blocking::Display
+    display::nonblocking::{BitImage, GreyscaleImage}
 };
 
 #[entry]
@@ -25,31 +26,33 @@ fn main() -> ! {
     let mut timer = Timer::new(board.TIMER0);
     let mut rng = Rng::new(board.RNG);
     let mut game = Game::new(rng.random_u32());
-    let mut display = Display::new(board.display_pins);
 
     init_buttons(board.GPIOTE, board.buttons);
+    init_display(board.TIMER1, board.display_pins);
 
     loop {
         // general application loop
         loop {
             //this is the game loop
-            let image = game.game_matrix(9, 9, 9);
+            let image = GreyscaleImage::new(&game.game_matrix(6, 3, 9));
 
-            //displays the current state of the game (via the game matrix)
-            display.show(&mut timer, image, game.calc_step_interval());
-
+            //displays the current state of the game as a image
+            display_image(&image);
+            timer.delay_ms(game.calc_step_interval());
             match game.status {
                 GameStatus::Ongoing => game.step(get_turn(true)),
                 _ => {
                     //handles won or lost scenarios
                     for _ in 0..3 {
-                        display.clear();
+                        clear_display();
                         timer.delay_ms(200u32); //waits for 200ms
-                        display.show(&mut timer, image, 200)
+                        display_image(&image);
+                        timer.delay_ms(200u32); //waits for 200ms
                     }
 
-                    display.clear();
-                    display.show(&mut timer, game.score_matrix(), 1000); //displays the score got 1 sec
+                    clear_display();
+                    display_image(&BitImage::new(&game.score_matrix())); //displays the score got 1 sec
+                    timer.delay_ms(200u32);
                     break // ends the game loop
                 }
             }

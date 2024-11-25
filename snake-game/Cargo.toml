@@ -20,6 +20,7 @@ heapless = "0.8.0"
 embedded-hal = "0.2.6"
 lsm303agr = "0.2.2"
 libm = "0.2.1"
+tiny-led-matrix = "1.0.2"
 
 [dev-dependencies]
 # Sneak in dependencies for examples which clash with panic-hal when generating
