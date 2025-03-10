@@ -74,4 +74,8 @@ pub fn get_turn(reset: bool) -> Turn {
     })
 }
 
+pub(crate) fn init_display(board_timer:) {
+
+}
+
 

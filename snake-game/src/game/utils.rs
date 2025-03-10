@@ -1,5 +1,4 @@
 use heapless::FnvIndexSet;
-
 pub enum Direction {
     Up,
     Down,
