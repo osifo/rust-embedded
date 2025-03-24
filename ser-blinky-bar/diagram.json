@@ -1,0 +1,59 @@
+{
+    "version": 1,
+    "author": "Anosike Osifo",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "board-esp32-s3-devkitc-1",
+        "id": "esp",
+        "top": 0,
+        "left": 0,
+        "attrs": { "builder": "rust-std-esp" }
+      },
+      {
+        "type": "wokwi-led-bar-graph",
+        "id": "ledbar",
+        "top": -95,
+        "left": 150,
+        "rotate": 90,
+        "attrs": { "color": "red", "flip": "1" }
+      },
+      {
+        "type": "wokwi-pushbutton",
+        "id": "button",
+        "top": -70.8,
+        "left": -149.4,
+        "attrs": { "color": "green", "flip": "1" }
+      }
+    ],
+    "connections": [
+      [ "esp:21", "$serialMonitor:RX", "", [] ],
+      [ "esp:20", "$serialMonitor:TX", "", [] ],
+      [ "esp:1", "ledbar:A10", "green", [] ],
+      [ "esp:10", "ledbar:A9", "green", [] ],
+      [ "esp:19", "ledbar:A8", "green", [] ],
+      [ "esp:18", "ledbar:A7", "green", [] ],
+      [ "esp:4", "ledbar:A6", "green", [] ],
+      [ "esp:5", "ledbar:A5", "green", [] ],
+      [ "esp:6", "ledbar:A4", "green", [] ],
+      [ "esp:7", "ledbar:A3", "green", [] ],
+      [ "esp:8", "ledbar:A2", "green", [] ],
+      [ "esp:9", "ledbar:A1", "green", [] ],
+      [ "ledbar:C1", "ledbar:C2", "black", [] ],
+      [ "ledbar:C2", "ledbar:C3", "black", [] ],
+      [ "ledbar:C3", "ledbar:C4", "black", [] ],
+      [ "ledbar:C4", "ledbar:C5", "black", [] ],
+      [ "ledbar:C5", "ledbar:C6", "black", [] ],
+      [ "ledbar:C6", "ledbar:C7", "black", [] ],
+      [ "ledbar:C7", "ledbar:C8", "black", [] ],
+      [ "ledbar:C8", "ledbar:C9", "black", [] ],
+      [ "ledbar:C9", "ledbar:C10", "black", [] ],
+      [ "ledbar:C10", "esp:GND.2", "black", [] ],
+
+      [ "esp:3", "button:2.r", "green", [] ],
+      [ "esp:GND.3", "button:1.r", "black", [] ]
+    ],
+    "serialMonitor": { "display": "terminal" },
+    "dependencies": {}
+  }
+  
