@@ -15,6 +15,7 @@ fn main() {
     let blink_delay = 500_u32;
 
     // Step 2 - set the pin direction for the pins i want to use
+    // PinDriver here is form the gpio crate imported above
     let a10_pin = PinDriver::output(device_peri.pins.gpio1.downgrade_output()).unwrap();
     let a9_pin  = PinDriver::output(device_peri.pins.gpio10.downgrade_output()).unwrap();
     let a8_pin  = PinDriver::output(device_peri.pins.gpio19.downgrade_output()).unwrap();

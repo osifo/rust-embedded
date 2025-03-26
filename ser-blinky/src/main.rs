@@ -14,17 +14,17 @@ fn main() {
     let device_peri = Peripherals::take().unwrap();
 
     // Step 2 - Cofingure Pin direction (set as output pin)
-    let mut led_pin = PinDriver::output(device_peri.pins.gpio1).unwrap();
+    let mut led_pin: PinDriver<'_, _, Output> = PinDriver::output(device_peri.pins.gpio1).unwrap();
 
 
     loop {
         // Step 3 - configure pin drive
         log::info!("setting signal to high");
-        led_pin.set_high();
+        led_pin.set_level(Level::High).unwrap();
         FreeRtos::delay_ms(1000_u32);
         
         log::info!("setting signal to low");
-        led_pin.set_low();
+        led_pin.set_level(Level::Low).unwrap();
         FreeRtos::delay_ms(1000_u32);
     }
 }
