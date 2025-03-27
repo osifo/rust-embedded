@@ -1,6 +1,11 @@
 use esp_idf_svc::hal::delay::FreeRtos;
 use esp_idf_svc::hal::gpio::*;
 use esp_idf_svc::hal::peripherals::Peripherals;
+use std::sync::atomic::{AtomicBool, AtomicU32};
+use std::sync::atomic::Ordering;
+
+static IS_BUTTON_PRESSED: AtomicBool = AtomicBool::new(false);
+static ON_DELAY: AtomicU32 = AtomicU32::new(2000);
 
 fn main() {
     // It is necessary to call this function once. Otherwise some patches to the runtime
@@ -12,7 +17,7 @@ fn main() {
 
     //step 1 - take the peripherals
     let device_peri = Peripherals::take().unwrap();
-    let blink_delay = 500_u32;
+    let off_delay = 100_u32;
 
     // Step 2 - set the pin direction for the pins i want to use
     // PinDriver here is form the gpio crate imported above
@@ -32,30 +37,44 @@ fn main() {
 
     // Step 3 - Set pin pull (for input pin)
     button_pin.set_pull(Pull::Up).unwrap();
+    button_pin.set_interrupt_type(InterruptType::PosEdge).unwrap();
+    
+    // connects the button's interrupt to the defined ISR
+    unsafe { button_pin.subscribe(button_pressed_callback).unwrap() }
+    
+    button_pin.enable_interrupt().unwrap();
 
     loop {
         for mut pin in &mut pin_list {
-            pin.set_high().unwrap(); // turn on the led
-            let delay_val = button_pressed(&button_pin, &blink_delay); // get on delay duration 
-            FreeRtos::delay_ms(delay_val); // keep the led on
+            pin.set_level(Level::High).unwrap(); // turn on the led
+            // let delay_val = button_pressed(&button_pin, &blink_delay); // get on delay duration 
+            FreeRtos::delay_ms(ON_DELAY.load(Ordering::Relaxed)); // keep the led on
     
-            pin.set_low().unwrap(); // turn off the led
-            FreeRtos::delay_ms(blink_delay); // keep the led off 
+            pin.set_level(Level::Low).unwrap(); // turn off the led
+            FreeRtos::delay_ms(off_delay); // keep the led off
+
+            handle_button_pressed(&mut button_pin);
         }
     }
 }
 
-fn button_pressed(button: &PinDriver<'_, Gpio3, Input>, delay: &u32) -> u32 {
-    if button.is_low() {
-        println!("button pressed");
-        
-        // upon each press, the delay is reduced by 50. it is reset to 200 once it's <= 50.
-        if delay <= &100_u32 {
-            return 1000_u32;
+fn handle_button_pressed(button: &mut PinDriver<'_, Gpio3, Input>) -> () {
+
+    if IS_BUTTON_PRESSED.load(Ordering::Relaxed) { // checks if the button is pressed.
+
+        let delay_value = ON_DELAY.load(Ordering::Relaxed);
+        if delay_value <= 200 {
+            ON_DELAY.store(2000, Ordering::Relaxed); // resets
         } else {
-            return delay - 100_u32;
+            ON_DELAY.store(delay_value.wrapping_sub(200), Ordering::Relaxed);
         }
-    } else {
-        return *delay;
+
+        // resets the button-pressed state
+        IS_BUTTON_PRESSED.store(false, Ordering::Relaxed);
+        button.enable_interrupt().unwrap();
     }
+}
+
+fn button_pressed_callback() {
+    IS_BUTTON_PRESSED.store(true, Ordering::Relaxed);
 }
