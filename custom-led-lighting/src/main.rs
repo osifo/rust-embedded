@@ -33,11 +33,14 @@ fn main() {
                     } else {
                         current_level = Level::High;
                     }
+
                     iterated_items = 0;
                 }
 
                 FreeRtos::delay_ms(1000u32)
             }
+            
+            pin_list.reverse();
         }
     }
 }
