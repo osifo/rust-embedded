@@ -1,5 +1,5 @@
 [package]
-name = "ser-keypad-detector"
+name = "ser-keypad"
 version = "0.1.0"
 authors = ["Anosike Osifo <code.anosikeosifo@gmail.com>"]
 edition = "2021"
@@ -7,7 +7,7 @@ resolver = "2"
 rust-version = "1.77"
 
 [[bin]]
-name = "ser-keypad-detector"
+name = "ser-keypad"
 harness = false # do not use the built in cargo test harness -> resolve rust-analyzer errors
 
 [profile.release]

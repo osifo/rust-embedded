@@ -1,0 +1,37 @@
+{
+    "version": 1,
+    "author": "Anosike Osifo",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "board-esp32-s3-devkitc-1",
+        "id": "esp",
+        "top": 250,
+        "left": 250,
+        "rotate": 90,
+        "attrs": { "builder": "rust-std-esp" }
+      },
+      {
+        "type": "wokwi-membrane-keypad",
+        "id": "keypad",
+        "top": -95,
+        "left": 150,
+        "attrs": { "color": "red", "flip": "1" }
+      }
+    ],
+    "connections": [
+      [ "esp:21", "$serialMonitor:RX", "", [] ],
+      [ "esp:20", "$serialMonitor:TX", "", [] ],
+      [ "esp:47", "keypad:R1", "green", [] ],
+      [ "esp:48", "keypad:R2", "green", [] ],
+      [ "esp:45", "keypad:R3", "green", [] ],
+      [ "esp:0",  "keypad:R4", "green", [] ],
+      [ "esp:18", "keypad:C1", "brown", [] ],
+      [ "esp:17", "keypad:C2", "brown", [] ],
+      [ "esp:16", "keypad:C3", "brown", [] ],
+      [ "esp:15", "keypad:C4", "brown", [] ]
+    ],
+    "serialMonitor": { "display": "terminal" },
+    "dependencies": {}
+  }
+  
