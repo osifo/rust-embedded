@@ -1,0 +1,33 @@
+{
+    "version": 1,
+    "author": "Anosike Osifo",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "board-esp32-s3-devkitc-1",
+        "id": "esp",
+        "top": 250,
+        "left": 250,
+        "rotate": 90,
+        "attrs": { "builder": "rust-std-esp" }
+      },
+      {
+        "type": "wokwi-ntc-temperature-sensor",
+        "id": "ntc-sensor",
+        "top": 80,
+        "left": 219,
+        "rotate": 90,
+        "attrs": { "color": "red", "flip": "1" }
+      }
+    ],
+    "connections": [
+      [ "esp:21", "$serialMonitor:RX", "", [] ],
+      [ "esp:20", "$serialMonitor:TX", "", [] ],
+      [ "esp:4", "ntc-sensor:OUT", "green", [] ],
+      [ "esp:3V3.2", "ntc-sensor:VCC", "green", [] ],
+      [ "esp:GND.2", "ntc-sensor:GND", "green", [] ]
+    ],
+    "serialMonitor": { "display": "terminal" },
+    "dependencies": {}
+  }
+  
