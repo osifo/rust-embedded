@@ -7,6 +7,8 @@ use esp_idf_svc::hal::peripherals::Peripherals;
 
 
 fn main() {
+    const VMAX: f64 =  4095.0;
+
     // It is necessary to call this function once. Otherwise some patches to the runtime
     // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
     esp_idf_svc::sys::link_patches();
@@ -33,6 +35,7 @@ fn main() {
     loop {
         let sample_reading: u16 = adc_channel.read().unwrap();
         let raw_reading: u16 =  adc_channel.read_raw().unwrap();
+        let input_voltage: <<<f64 as Div<i32>>::Output as BitXor<i32>>::Output as Mul<u16>>::Output = (VMAX / 2^8) * sampled_value;
 
         println!("Digital Reading: {}, Voltage Reading: {}", sample_reading, raw_reading);
 
