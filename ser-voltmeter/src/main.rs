@@ -4,7 +4,7 @@ use esp_idf_svc::hal::adc::oneshot::config::{AdcChannelConfig, Calibration};
 use esp_idf_svc::hal::adc::oneshot::*;
 use esp_idf_svc::hal::delay::FreeRtos;
 use esp_idf_svc::hal::peripherals::Peripherals;
-
+// use std::ops::{Mul, Div, BitXor};
 
 fn main() {
     const VMAX: f64 =  4095.0;
@@ -33,11 +33,11 @@ fn main() {
     ).unwrap();
 
     loop {
-        let sample_reading: u16 = adc_channel.read().unwrap();
-        let raw_reading: u16 =  adc_channel.read_raw().unwrap();
-        let input_voltage: <<<f64 as Div<i32>>::Output as BitXor<i32>>::Output as Mul<u16>>::Output = (VMAX / 2^8) * sampled_value;
+        let sample_reading = adc_channel.read_raw().unwrap() as f64;
+        // let raw_reading: u16 =  adc_channel.read_raw().unwrap();
+        let input_voltage = (VMAX / 2u16.pow(8) as f64) * sample_reading;
 
-        println!("Digital Reading: {}, Voltage Reading: {}", sample_reading, raw_reading);
+        println!("Digital Reading: {}, Voltage Reading: {}", sample_reading, input_voltage);
 
         FreeRtos::delay_ms(500);
     }
