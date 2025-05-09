@@ -1,11 +1,8 @@
 use esp_idf_svc::hal::gpio::*;
 use esp_idf_svc::hal::peripherals::Peripherals;
 use esp_idf_svc::log::EspLogger;
-use std::sync::atomic::AtomicBool;
 use std::sync::Mutex;
 
-
-static IS_MOTION_ACTIVE: AtomicBool = AtomicBool::new(false);
 static PIR_SENSOR: Mutex<Option<PinDriver<Gpio16, Input>>> = Mutex::new(None);
 static LED: Mutex<Option<PinDriver<Gpio5, Output>>> = Mutex::new(None);
 
