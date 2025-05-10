@@ -6,26 +6,56 @@
       {
         "type": "board-esp32-s3-devkitc-1",
         "id": "esp",
-        "top": 250,
-        "left": 250,
+        "top": 100,
+        "left": 226,
         "rotate": 90,
         "attrs": { "builder": "rust-std-esp" }
       },
       {
+        "type": "wokwi-led-bar-graph",
+        "id": "ledbar",
+        "top": 10,
+        "left": 219,
+        "rotate": -90,
+        "attrs": { "color": "GYR", "flip": "1" }
+      },
+      {
         "type": "wokwi-ntc-temperature-sensor",
         "id": "ntc-sensor",
-        "top": 80,
-        "left": 219,
+        "top": -90,
+        "left": 295,
         "rotate": 90,
         "attrs": { "color": "red", "flip": "1" }
       }
     ],
     "connections": [
+      [ "esp:4", "ntc-sensor:OUT", "green", [] ],
+      [ "esp:3V3.2", "ntc-sensor:VCC", "red", [] ],
+      [ "esp:GND.3", "ntc-sensor:GND", "black", [] ],
+
       [ "esp:21", "$serialMonitor:RX", "", [] ],
       [ "esp:20", "$serialMonitor:TX", "", [] ],
-      [ "esp:4", "ntc-sensor:OUT", "green", [] ],
-      [ "esp:3V3.2", "ntc-sensor:VCC", "green", [] ],
-      [ "esp:GND.2", "ntc-sensor:GND", "green", [] ]
+      [ "esp:14", "ledbar:A1", "green", [] ],
+      [ "esp:13", "ledbar:A2", "green", [] ],
+      [ "esp:12", "ledbar:A3", "green", [] ],
+      [ "esp:11", "ledbar:A4", "green", [] ],
+      [ "esp:10", "ledbar:A5", "green", [] ],
+      [ "esp:9", "ledbar:A6", "green", [] ],
+      [ "esp:46", "ledbar:A7", "green", [] ],
+      [ "esp:3", "ledbar:A8", "green", [] ],
+      [ "esp:8", "ledbar:A9", "green", [] ],
+      [ "esp:18", "ledbar:A10", "green", [] ],
+
+      [ "ledbar:C1", "ledbar:C2", "blue", [] ],
+      [ "ledbar:C2", "ledbar:C3", "blue", [] ],
+      [ "ledbar:C3", "ledbar:C4", "blue", [] ],
+      [ "ledbar:C4", "ledbar:C5", "blue", [] ],
+      [ "ledbar:C5", "ledbar:C6", "blue", [] ],
+      [ "ledbar:C6", "ledbar:C7", "blue", [] ],
+      [ "ledbar:C7", "ledbar:C8", "blue", [] ],
+      [ "ledbar:C8", "ledbar:C9", "blue", [] ],
+      [ "ledbar:C9", "ledbar:C10", "blue", [] ],
+      [ "ledbar:C10", "esp:GND.2", "brown", [] ]
     ],
     "serialMonitor": { "display": "terminal" },
     "dependencies": {}
