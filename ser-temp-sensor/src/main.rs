@@ -6,7 +6,6 @@ use esp_idf_svc::hal::adc::oneshot::config::{AdcChannelConfig, Calibration};
 use esp_idf_svc::hal::adc::attenuation::DB_11;
 use esp_idf_svc::hal::peripherals::Peripherals;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicU32, Ordering};
 use libm::log;
 
 fn main() {
