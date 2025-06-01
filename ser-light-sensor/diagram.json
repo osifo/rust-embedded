@@ -1,0 +1,63 @@
+{
+    "version": 1,
+    "author": "Anosike Osifo",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "board-esp32-s3-devkitc-1",
+        "id": "esp",
+        "top": 250,
+        "left": 250,
+        "rotate": -90,
+        "attrs": { "builder": "rust-std-esp" }
+      },
+      {
+        "type": "wokwi-photoresistor-sensor",
+        "id": "photo-sensor",
+        "top": 130,
+        "left": 103,
+        "rotate": 90,
+        "attrs": { "color": "red", "flip": "1" }
+      },
+      {
+        "type": "wokwi-led-bar-graph",
+        "id": "ledbar",
+        "top": 195,
+        "left": 315,
+        "rotate": -90,
+        "attrs": { "color": "white", "flip": "0" }
+      }
+    ],
+    "connections": [
+      [ "esp:21", "$serialMonitor:RX", "", [] ],
+      [ "esp:20", "$serialMonitor:TX", "", [] ],
+
+      [ "esp:1", "photo-sensor:AO", "blue", [] ],
+      [ "esp:3V3.2", "photo-sensor:VCC", "red", [] ],
+      [ "esp:GND.2", "photo-sensor:GND", "black", [] ],
+
+      [ "esp:19", "ledbar:A10", "green", [] ],
+      [ "esp:20", "ledbar:A9", "green", [] ],
+      [ "esp:21", "ledbar:A8", "green", [] ],
+      [ "esp:47", "ledbar:A7", "green", [] ],
+      [ "esp:48", "ledbar:A6", "green", [] ],
+      [ "esp:45", "ledbar:A5", "green", [] ],
+      [ "esp:0", "ledbar:A4", "green", [] ],
+      [ "esp:35", "ledbar:A3", "green", [] ],
+      [ "esp:36", "ledbar:A2", "green", [] ],
+      [ "esp:37", "ledbar:A1", "green", [] ],
+      [ "ledbar:C1", "ledbar:C2", "brown", [] ],
+      [ "ledbar:C2", "ledbar:C3", "brown", [] ],
+      [ "ledbar:C3", "ledbar:C4", "brown", [] ],
+      [ "ledbar:C4", "ledbar:C5", "brown", [] ],
+      [ "ledbar:C5", "ledbar:C6", "brown", [] ],
+      [ "ledbar:C6", "ledbar:C7", "brown", [] ],
+      [ "ledbar:C7", "ledbar:C8", "brown", [] ],
+      [ "ledbar:C8", "ledbar:C9", "brown", [] ],
+      [ "ledbar:C9", "ledbar:C10", "brown", [] ],
+      [ "ledbar:C10", "esp:GND.3", "brown", [] ]
+    ],
+    "serialMonitor": { "display": "terminal" },
+    "dependencies": {}
+  }
+  
