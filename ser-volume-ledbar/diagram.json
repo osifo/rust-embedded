@@ -31,7 +31,7 @@
       [ "esp:21", "$serialMonitor:RX", "", [] ],
       [ "esp:20", "$serialMonitor:TX", "", [] ],
 
-      [ "esp:48", "pmeter:SIG", "green", [] ],
+      [ "esp:1", "pmeter:SIG", "green", [] ],
       [ "esp:3V3.2", "pmeter:VCC", "red", [] ],
       [ "esp:GND.1", "pmeter:GND", "black", [] ],
 
