@@ -24,65 +24,61 @@ fn main() {
     let mut old_pin1_voltage: Level = Level::High;
     let mut old_pin2_voltage: Level = Level::High;
 
-    let timer1_counter: u64 = 0;
-    let timer2_counter: u64 = 0;
-
     //2. determine the two pins to be used, initiatize them
     let peripherals = Peripherals::take().unwrap();
-    let pin1 = PinDriver::input(peripherals.pins.gpio1.downgrade_input()).expect("could not setup pin1");
-    let pin2 = PinDriver::input(peripherals.pins.gpio2.downgrade_input()).expect("could not setup pin2");
+    let mut pin1 = PinDriver::input(peripherals.pins.gpio1.downgrade_input()).expect("could not setup pin1");
+    let mut pin2 = PinDriver::input(peripherals.pins.gpio2.downgrade_input()).expect("could not setup pin2");
 
     // 3. set up the counters for measuring duration between signal changes for each pin
     // (i don't have any custom values for the default config struct, so no need to set)
-    let timer1 = TimerDriver::new(peripherals.timer00, &Config::new()).expect("could not setup timer for pin 1");
-    timer1.set_counter(0_u64);
+    let mut timer1 = TimerDriver::new(peripherals.timer00, &Config::new()).expect("could not setup timer for pin 1");
+    timer1.set_counter(0_u64).expect("count not initialize timer1");
     timer1.enable(true).expect("could not enable timer1");
     
-    let timer2 = TimerDriver::new(peripherals.timer01, &Config::new()).expect("could not setup timer for pin 2");
-    timer2.set_counter(0_u64);
+    let mut timer2 = TimerDriver::new(peripherals.timer01, &Config::new()).expect("could not setup timer for pin 2");
+    timer2.set_counter(0_u64).expect("count not initialize timer1");
     timer2.enable(true).expect("could not enable timer1");
 
     // 4. setup the pins to trigger an interrupt anytime there's a change to it's voltage level (either +ve or -ve edge)
-    pin1.set_interrupt_type(InterruptType::AnyEdge);
+    pin1.set_interrupt_type(InterruptType::AnyEdge).unwrap();
     unsafe { pin1.subscribe(reigster_pin1_signal).expect("could not connect pin1 to ISR"); }
     pin1.enable_interrupt().expect("Could not enable interrupt for pin 1");
 
-    pin2.set_interrupt_type(InterruptType::AnyEdge);
+    pin2.set_interrupt_type(InterruptType::AnyEdge).unwrap();
     unsafe { pin1.subscribe(reigster_pin2_signal).expect("could not connect pin1 to ISR"); }
     pin2.enable_interrupt().expect("Could not enable interrupt for pin 2");
     
     loop {
         if PIN1_SIGNAL_RECEIVED.load(Ordering::Relaxed) {
-           calculate_pulse_duration(pin1, old_pin1_voltage, timer1, timer1_counter);
+           calculate_pulse_duration(&pin1, &mut old_pin1_voltage, &mut timer1);
            PIN1_SIGNAL_RECEIVED.store(false, Ordering::Relaxed); 
         }
 
         if PIN2_SIGNAL_RECEIVED.load(Ordering::Relaxed) {
-            calculate_pulse_duration(pin2, old_pin2_voltage, timer2, timer2_counter);
+            calculate_pulse_duration(&pin2, &mut old_pin2_voltage, &mut timer2);
             PIN2_SIGNAL_RECEIVED.store(false, Ordering::Relaxed);
         }
     }
 }
 
 fn calculate_pulse_duration(
-        pin: PinDriver<'static, AnyInputPin, Input>, 
-        old_signal_value: Level,
-        pin_timer: TimerDriver,
-        timer_counter: u64) {
+        pin: &PinDriver<'static, AnyInputPin, Input>, 
+        old_signal_voltage: &mut Level,
+        pin_timer: &mut TimerDriver) {
     // steps to determine duration between PosEdge+NegEdge
 
     // if a signal transition occured and is a PosEdge, reset counter and update old signal value
     let current_signal_voltage = pin.get_level();
-    
-    if old_signal_value != current_signal_voltage && pin.is_set_high() {
-        old_signal_value = Level::High;
-        pin_timer.set_counter(0_u64);
+
+    if *old_signal_voltage != current_signal_voltage && pin.is_high() {
+        *old_signal_voltage = Level::High;
+        pin_timer.set_counter(0_u64).expect("could not reset the timer counter");
     } 
     
     // if a signal transition occured, and is NegEdge, capture timer value and update old signal value.
-    if old_signal_value != current_signal_voltage && pin.is_set_low() {
-        timer_counter = pin_timer.counter().expect("unable to get counter value");
-        old_signal_value = Level::Low;
+    if *old_signal_voltage != current_signal_voltage && pin.is_low() {
+        let timer_counter = pin_timer.counter().expect("unable to get counter value");
+        *old_signal_voltage = Level::Low;
 
         println!("The duration since last pulse is: {}", timer_counter/1000);
     }
