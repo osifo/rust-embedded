@@ -25,7 +25,7 @@
       "top": 120,
       "left": -220,
       "rotate": -90,
-      "attrs": { "color": "blue", "flip": "1" }
+      "attrs": { "color": "blue" }
     },
     {
       "type": "wokwi-resistor",
@@ -40,7 +40,7 @@
       "id": "led-success",
       "top": 0,
       "left": -55,
-      "attrs": { "color": "green", "flip": "1" }
+      "attrs": { "color": "green" }
     },
     {
       "type": "wokwi-resistor",
@@ -70,17 +70,17 @@
     [ "button:1.r", "esp:21", "green", [] ],
     [ "button:2.r", "esp:GND.4", "black", [] ],
     
-    [ "led-display:C", "resistor-display:1", "red" ],
+    [ "led-display:A", "resistor-display:1", "blue" ],
     [ "resistor-display:2", "esp:14", "red" ],
-    [ "led-display:A", "esp:GND.1", "black" ],
+    [ "led-display:C", "esp:GND.1", "black" ],
 
-    [ "led-success:C", "resistor-success:1", "red" ],
+    [ "led-success:A", "resistor-success:1", "green" ],
+    [ "led-success:C", "esp:GND.3", "black" ],
     [ "resistor-success:2", "esp:12", "red" ],
-    [ "led-success:A", "esp:GND.3", "black" ],
 
     [ "led-failure:A", "resistor-failure:1", "red" ],
-    [ "resistor-failure:2", "esp:7", "red" ],
-    [ "led-failure:C", "esp:GND.2", "black" ]
+    [ "led-failure:C", "esp:GND.2", "black" ],
+    [ "resistor-failure:2", "esp:7", "red" ]
   ],
   "serialMonitor": { "display": "terminal" },
   "dependencies": {}

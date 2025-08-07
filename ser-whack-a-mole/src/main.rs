@@ -3,7 +3,6 @@ use esp_idf_svc::hal::peripherals::Peripherals;
 use esp_idf_svc::hal::timer::config::Config;
 use esp_idf_svc::hal::timer::{TimerDriver, TIMER00, TIMER01, TIMER10, TIMER11};
 use esp_idf_svc::hal::gpio::PinDriver;
-use esp_idf_svc::hal::delay::FreeRtos;
 use rand::Rng;
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -53,8 +52,6 @@ impl LedPins {
         timers.track_feedback_timer();
 
         println!("You responded in {} ms", response_speed);
-
-        FreeRtos::delay_ms(100); // delay to values set can take effect
     }
 
     fn display_failure_feedback(&mut self, timers: &mut Timers) {
@@ -63,8 +60,6 @@ impl LedPins {
         
         IS_FEEDBACK_ACTIVE.store(true, Ordering::Relaxed);
         timers.track_feedback_timer();
-
-        FreeRtos::delay_ms(100); // delay to values set can take effect
     }
 }
 
@@ -147,13 +142,13 @@ impl Timers {
         let _ = self.display_delay.enable(false);
         let _ = self.display_duration.enable(false);
         let _ = self.response_duration.enable(false);
-        // let _ =  self.feedback_delay.enable(false);
     }
 }
 
-fn show_display_led(leds: &mut LedPins, timers: &mut Timers) {
+fn show_display_led(leds: &mut LedPins, timers: &mut Timers, button: &mut PinDriver<'_, Gpio21, Input>) {
     HAS_DELAY_TIMED_OUT.store(false, Ordering::Relaxed);
     leds.reset_all_feedback();
+    button.enable_interrupt().expect("could not re-enable button interrupt");
 
     leds.display.set_level(Level::High).expect("could not turn on display led.");
 
@@ -164,11 +159,11 @@ fn show_display_led(leds: &mut LedPins, timers: &mut Timers) {
 fn restart_game(leds: &mut LedPins, timers: &mut Timers, button: &mut PinDriver<'_, Gpio21, Input>) {
     timers.reset_all();
 
-    button.enable_interrupt().expect("could not re-enable button interrupt");
     HAS_DELAY_TIMED_OUT.store(false, Ordering::Relaxed);
     HAS_GAME_STARTED.store(false, Ordering::Relaxed);
     HAS_DISPLAY_TIMED_OUT.store(false, Ordering::Relaxed);
     IS_BUTTON_PRESSED.store(false, Ordering::Relaxed);
+    button.enable_interrupt().expect("could not re-enable button interrupt");
 
     timers.track_delay_timer();
 }
@@ -179,6 +174,7 @@ fn handle_delay_timeout() {
 }
 
 fn handle_button_pressed() {
+    // this ensures that button press inputs are only calid after display led has turned on
     if HAS_GAME_STARTED.load(Ordering::Relaxed) {
         IS_BUTTON_PRESSED.store(true, Ordering::Relaxed);
     }
@@ -231,14 +227,11 @@ fn main() {
         let is_displaying_feedback: bool = IS_FEEDBACK_ACTIVE.load(Ordering::Relaxed);
         let new_game_started: bool = HAS_DELAY_TIMED_OUT.load(Ordering::Relaxed);
 
-        // this ensures that button press inputs are only calid after display led has turned on
-        let game_ongoing: bool = HAS_GAME_STARTED.load(Ordering::Relaxed);
-
         if new_game_started && !is_displaying_feedback && !display_timed_out {
-            show_display_led(&mut leds, &mut timers);
+            show_display_led(&mut leds, &mut timers, &mut button);
         }
 
-        if game_ongoing && button_was_pressed && !display_timed_out && !is_displaying_feedback {
+        if button_was_pressed && !display_timed_out && !is_displaying_feedback {
             let response_speed: u64 = timers.get_response_speed_secs();
             leds.display_success_feedback(response_speed, &mut timers);
         }
@@ -250,7 +243,6 @@ fn main() {
 
 
         if  !is_displaying_feedback && (button_was_pressed || display_timed_out) {
-            // leds.reset_all_feedback();
             restart_game(&mut leds, &mut timers, &mut button);
         }
     }
