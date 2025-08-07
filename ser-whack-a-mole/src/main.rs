@@ -179,7 +179,9 @@ fn handle_delay_timeout() {
 }
 
 fn handle_button_pressed() {
-    IS_BUTTON_PRESSED.store(true, Ordering::Relaxed);
+    if HAS_GAME_STARTED.load(Ordering::Relaxed) {
+        IS_BUTTON_PRESSED.store(true, Ordering::Relaxed);
+    }
 }
 
 fn handle_display_timeout() {
@@ -247,7 +249,7 @@ fn main() {
         }
 
 
-        if  !is_displaying_feedback && game_ongoing && (button_was_pressed || display_timed_out) {
+        if  !is_displaying_feedback && (button_was_pressed || display_timed_out) {
             // leds.reset_all_feedback();
             restart_game(&mut leds, &mut timers, &mut button);
         }
