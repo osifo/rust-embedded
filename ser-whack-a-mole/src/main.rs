@@ -13,10 +13,10 @@ static IS_FEEDBACK_ACTIVE: AtomicBool = AtomicBool::new(false);
 static HAS_GAME_STARTED: AtomicBool = AtomicBool::new(false);
 
 const MIN_DELAY: u64 = 3_000_000;
-const MAX_DELAY: u64 = 6_000_000;
+const MAX_DELAY: u64 = 5_000_000;
 
-const MIN_DISPLAY_DURATION: u64 = 2_000_000;
-const MAX_DISPLAY_DURATION: u64 = 6_000_000;
+const MIN_DISPLAY_DURATION: u64 = 1_000_000;
+const MAX_DISPLAY_DURATION: u64 = 3_000_000;
 
 const FEEDBACK_DURATION: u64 = 2_000_000; // has to be less than the min delay
 

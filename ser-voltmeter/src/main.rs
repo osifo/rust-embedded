@@ -5,8 +5,9 @@ use esp_idf_svc::hal::adc::oneshot::*;
 use esp_idf_svc::hal::delay::FreeRtos;
 use esp_idf_svc::hal::peripherals::Peripherals;
 
-
 fn main() {
+    const VMAX: f64 =  4095.0;
+
     // It is necessary to call this function once. Otherwise some patches to the runtime
     // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
     esp_idf_svc::sys::link_patches();
@@ -31,10 +32,11 @@ fn main() {
     ).unwrap();
 
     loop {
-        let sample_reading: u16 = adc_channel.read().unwrap();
-        let raw_reading: u16 =  adc_channel.read_raw().unwrap();
+        let sample_reading = adc_channel.read_raw().unwrap() as f64;
+        // let raw_reading: u16 =  adc_channel.read_raw().unwrap();
+        let input_voltage = (VMAX / 2u16.pow(8) as f64) * sample_reading;
 
-        println!("Digital Reading: {}, Voltage Reading: {}", sample_reading, raw_reading);
+        println!("Digital Reading: {}, Voltage Reading: {}", sample_reading, input_voltage);
 
         FreeRtos::delay_ms(500);
     }

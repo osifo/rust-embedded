@@ -43,7 +43,8 @@ fn main() {
     let mut pin1_current: Level;
     let mut pin2_current: Level;
 
-    let mut timer1_counter: u64 = 0;
+    let mut timer1_counter: u64 = 
+    0;
     let mut timer2_counter: u64 = 0;
 
     let pin1 = PinDriver::input(peripherals.pins.gpio0).unwrap();
