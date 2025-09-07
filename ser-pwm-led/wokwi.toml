@@ -1,0 +1,6 @@
+# Wokwi Configuration File
+# Reference: https://docs.wokwi.com/vscode/project-config
+[wokwi]
+version = 1
+firmware = 'target/xtensa-esp32s3-espidf/debug/ser-pwm-led'
+elf = 'xtensa-esp32s3-espidf/debug/ser-pwm-led'

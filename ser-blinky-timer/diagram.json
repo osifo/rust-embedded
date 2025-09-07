@@ -15,7 +15,7 @@
         "id": "led1",
         "top": -70.8,
         "left": -149.4,
-        "attrs": { "color": "red", "flip": "1" }
+        "attrs": { "color": "green", "flip": "1" }
       },
       {
         "type": "wokwi-resistor",
