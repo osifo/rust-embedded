@@ -1,7 +1,6 @@
 use esp_idf_svc::hal::gpio::*;
 use esp_idf_svc::hal::prelude::*;
 use esp_idf_svc::hal::delay::Ets;
-use esp_idf_svc::log::EspLogger;
 
 use std::fmt::Error;
 
@@ -16,12 +15,14 @@ fn main() {
     let peripherals = Peripherals::take().unwrap();
     let mut led_pin = PinDriver::output(peripherals.pins.gpio12).expect("could not set output pin");
 
-    emulate_pwm(&mut led_pin, 100, 1000, 10000).unwrap();
+    loop {
+        emulate_pwm(&mut led_pin, 100, 1000, 10000).unwrap();
+    }
 }
 
 fn emulate_pwm(pin: &mut PinDriver<'_, Gpio12, Output>, duty_level: i32, frequency_hz: i32, duration_ms: i32) -> Result<(), Error> {
     let period = 1_000_000 / frequency_hz;
-    let fade_steps = 50;
+    let fade_steps = 200;
     let half_duration = duration_ms / 2; // total duration is low->high and high-> low
     let duration_per_step_ms = half_duration / fade_steps;
     let cycles_per_step: i32 = (duration_per_step_ms * frequency_hz) / 1000;
@@ -35,6 +36,8 @@ fn emulate_pwm(pin: &mut PinDriver<'_, Gpio12, Output>, duty_level: i32, frequen
         if start_time.elapsed().as_millis() >= half_duration as u128{
             break;
         }
+
+        log::info!("current cycle ======= {}", curr_duty_cycle);
 
         let on_time_us = (period * curr_duty_cycle) / 100;
         let off_time_us = period - on_time_us;
@@ -75,7 +78,6 @@ fn emulate_pwm(pin: &mut PinDriver<'_, Gpio12, Output>, duty_level: i32, frequen
         }
       }
     }
-    pin.set_low().unwrap();
 
     Ok(())
 }
