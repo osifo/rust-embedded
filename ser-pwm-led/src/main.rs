@@ -1,4 +1,4 @@
-use esp_idf_svc::hal::delay::Ets;
+use esp_idf_svc::hal::gpio::*;
 use esp_idf_svc::hal::ledc::{
     config::TimerConfig,
     LedcDriver,
@@ -6,57 +6,54 @@ use esp_idf_svc::hal::ledc::{
     Resolution
 };
 use esp_idf_svc::hal::prelude::*;
+use esp_idf_svc::sys::EspError;
 
-fn main() {
-    // It is necessary to call this function once. Otherwise some patches to the runtime
-    // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
+fn main() -> Result<(), EspError> {
     esp_idf_svc::sys::link_patches();
-
-    // Bind the log crate to the ESP Logging facilities
     esp_idf_svc::log::EspLogger::initialize_default();
 
-    let peripherals = Peripherals::take().unwrap();
+    let peripherals = Peripherals::take()?;
 
-    //configure teh Ledc timer driver
-    let timer_driver = LedcTimerDriver::new(
-        peripherals.ledc.timer0, 
+    let timer_driver: LedcTimerDriver<'_, _> = LedcTimerDriver::new(
+        peripherals.ledc.timer0,
         &TimerConfig::default()
             .frequency(1000.Hz())
             .resolution(Resolution::Bits14)
-    ).unwrap();
+    )?;
 
-    //configure the PWM driver for generating the signals
     let mut pwm_driver = LedcDriver::new(
-        peripherals.ledc.channel0, 
+        peripherals.ledc.channel0,
         timer_driver,
         peripherals.pins.gpio7
-    ).unwrap();
+    )?;
 
-    // next i need to handle the range and starting intensity (duty cycle).
-    let max_duty_cycle = pwm_driver.get_max_duty();
-    let start_duty_cycle = 0;
+    setup_fading(&mut pwm_driver)
+}
 
-    log::info!("max duty cycle is: {}", max_duty_cycle);
+fn setup_fading(pwm: &mut LedcDriver) -> Result<(), EspError> {
+    let start_time = std::time::Instant::now(); // gets the current time
+    let fade_steps = 10;
+    let mut duty_cycle: u128;
 
-    //initialize the duty cycle.
-    pwm_driver.set_duty(start_duty_cycle).unwrap();
-
-    //enable the pwm driver
-    pwm_driver.enable().unwrap();
+    // this value is based on the resolution of the timers used in the microcontroller for this example.
+    // the ESP32S3 has 14-bit timers, as seen in the TimerConfig line above.
+    let max_duty_amplitude = 16383; // 2^ nos of bits - 1
+    let full_cycle_amplitude = max_duty_amplitude * 2;
 
     
-
-    // next is to configure the fading adn reverse-fading loops.
-
     loop {
-        for duty in start_duty_cycle..max_duty_cycle {
-            pwm_driver.set_duty(duty).unwrap();
-            Ets::delay_us(100);
+        let mut elapsed_time = start_time.elapsed().as_millis();
+        let mapped_raw_step = (elapsed_time / fade_steps) % full_cycle_amplitude;
+        if elapsed_time <= max_duty_amplitude {
+            // this 'if' captures the first half of the cycle (the ON phase)
+            duty_cycle = mapped_raw_step;
+        } else if elapsed_time > max_duty_amplitude && elapsed_time <= full_cycle_amplitude  {
+            // this captured the second half of the PWM, when the led is turnning off
+            duty_cycle = full_cycle_amplitude - mapped_raw_step;
+        } else {
+            elapsed_time = 0_u128;
         }
     
-        for reverse_duty in max_duty_cycle..start_duty_cycle {
-            pwm_driver.set_duty(reverse_duty).unwrap();
-            Ets::delay_us(100);
-        }
+        pwm.set_duty(duty_cycle as u32)?
     }
 }
