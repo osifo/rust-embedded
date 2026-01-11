@@ -31,10 +31,8 @@ fn main() -> Result<(), EspError> {
 
 fn setup_fading(pwm: &mut LedcDriver) -> Result<(), EspError> {
     let start_time = std::time::Instant::now(); // gets the current time
-    let fade_frequency_hz = 2.0; // number of cycles per second
+    let fade_frequency_hz = 1.0; // number of cycles per second
     let cycle_time_ms = 1000.0 / fade_frequency_hz;
-
-    let mut duty_cycle: f64;
 
     // this value is based on the resolution of the timers used in the microcontroller for this example.
     // the ESP32S3 has 14-bit timers, as seen in the TimerConfig line above.
@@ -48,13 +46,13 @@ fn setup_fading(pwm: &mut LedcDriver) -> Result<(), EspError> {
         let elapsed_time = start_time.elapsed().as_millis() as f64;
         let mapped_raw_step = (elapsed_time / fade_steps) % full_cycle_amplitude;
         
-        if mapped_raw_step <= max_duty_amplitude {
+        let duty_cycle = if mapped_raw_step <= max_duty_amplitude {
             // this 'if' captures the first half of the cycle (the ON phase)
-            duty_cycle = mapped_raw_step;
+            mapped_raw_step
         } else  {
             // this captured the second half of the PWM, when the led is turnning off
-            duty_cycle = full_cycle_amplitude - mapped_raw_step;
-        }
+            full_cycle_amplitude - mapped_raw_step
+        };
     
         pwm.set_duty(duty_cycle as u32)?
     }
