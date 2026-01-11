@@ -1,4 +1,3 @@
-use esp_idf_svc::hal::gpio::*;
 use esp_idf_svc::hal::ledc::{
     config::TimerConfig,
     LedcDriver,
@@ -32,26 +31,29 @@ fn main() -> Result<(), EspError> {
 
 fn setup_fading(pwm: &mut LedcDriver) -> Result<(), EspError> {
     let start_time = std::time::Instant::now(); // gets the current time
-    let fade_steps = 10;
-    let mut duty_cycle: u128;
+    let fade_frequency_hz = 2.0; // number of cycles per second
+    let cycle_time_ms = 1000.0 / fade_frequency_hz;
+
+    let mut duty_cycle: f64;
 
     // this value is based on the resolution of the timers used in the microcontroller for this example.
     // the ESP32S3 has 14-bit timers, as seen in the TimerConfig line above.
-    let max_duty_amplitude = 16383; // 2^ nos of bits - 1
-    let full_cycle_amplitude = max_duty_amplitude * 2;
+    let max_duty_amplitude = 16383.0; // 2^ nos of bits - 1
+    let full_cycle_amplitude = max_duty_amplitude * 2.0;
+
+    let fade_steps = cycle_time_ms / full_cycle_amplitude;
 
     
     loop {
-        let mut elapsed_time = start_time.elapsed().as_millis();
+        let elapsed_time = start_time.elapsed().as_millis() as f64;
         let mapped_raw_step = (elapsed_time / fade_steps) % full_cycle_amplitude;
-        if elapsed_time <= max_duty_amplitude {
+        
+        if mapped_raw_step <= max_duty_amplitude {
             // this 'if' captures the first half of the cycle (the ON phase)
             duty_cycle = mapped_raw_step;
-        } else if elapsed_time > max_duty_amplitude && elapsed_time <= full_cycle_amplitude  {
+        } else  {
             // this captured the second half of the PWM, when the led is turnning off
             duty_cycle = full_cycle_amplitude - mapped_raw_step;
-        } else {
-            elapsed_time = 0_u128;
         }
     
         pwm.set_duty(duty_cycle as u32)?
