@@ -1,0 +1,3 @@
+- check for a wokwi simulation for servo motor
+-  explore the available api functions functions
+- instead of connecting a LED, connect the servo motor's ANODE to the PIN that has been enabled for PWM.
