@@ -19,8 +19,8 @@ fn main() -> Result<(), EspError> {
     let timer_driver: LedcTimerDriver<'_,_> = LedcTimerDriver::new(
         peripherals.ledc.timer0,
         &TimerConfig::default()
-            .frequency(1000.Hz())
-            .resolution(Resolution::Bits14)
+            .frequency(50.Hz())
+            .resolution(Resolution::Bits10)
     )?;
 
     let mut pwm_driver = LedcDriver::new(
@@ -29,39 +29,32 @@ fn main() -> Result<(), EspError> {
         pwm_pin
     )?;
 
+    let pwm_max_duty = pwm_driver.get_max_duty() as f64;
+    let min_duty = (0.05 * pwm_max_duty) as u32;
+    let max_duty = (0.1 * pwm_max_duty) as u32;
+
     // Bind the log crate to the ESP Logging facilities
     esp_idf_svc::log::EspLogger::initialize_default();
 
     log::info!("Hello, world!");
 
-    setup_rotation(&mut pwm_driver)
+    setup_rotation(min_duty, max_duty, &mut pwm_driver)
 }
 
-fn setup_rotation(pwm: &mut LedcDriver) -> Result<(), EspError> {
-    let start_time = std::time::Instant::now();
-    let fade_frequency_hz = 1.0; // this defines the number of cycles per sec
-    let cycle_time_ms = 1000.0 / fade_frequency_hz;
-    
-    let max_duty_amplitude: f64 = 16383.0;
-    let full_cycle_amplitude: f64 = max_duty_amplitude * 2.0;
+fn setup_rotation(min_duty: u32, max_duty: u32, pwm: &mut LedcDriver<'_>) -> Result<(), EspError> {
 
-    let fade_steps = cycle_time_ms / max_duty_amplitude;
+    pwm.set_duty(min_duty)?;
+    pwm.enable()?;
 
     loop {
-        let elapsed_time = start_time.elapsed().as_millis() as f64;
-        
-        // this mapping ensurs that when the step gets to the max allowed (amplitude), it resets to 0
-        let mapped_raw_step = (elapsed_time / fade_steps) % full_cycle_amplitude;
+        for duty in min_duty..max_duty {
+            pwm.set_duty(duty)?;
+            FreeRtos::delay_ms(20);
+        }
 
-        let duty_cycle = if mapped_raw_step <= max_duty_amplitude {
-            mapped_raw_step
-        } else {
-            full_cycle_amplitude - mapped_raw_step
-        };
-
-        pwm.set_duty(duty_cycle as u32);
-
-        FreeRtos::delay_ms(0);
+        for duty in (min_duty..=max_duty).rev() {
+            pwm.set_duty(duty)?;
+            FreeRtos::delay_ms(20);
+        }
     }
 }
-
