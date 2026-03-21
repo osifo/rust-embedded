@@ -31,7 +31,7 @@
   "connections": [
     ["potentiometer:GND", "esp:GND.1", "black"],
     ["potentiometer:VCC", "esp:5V", "red"],
-    ["potentiometer:SIG", "esp:14", "green"],
+    ["potentiometer:SIG", "esp:10", "green"],
     ["led:A", "resistor:1", "red"],
     ["led:C", "esp:GND.2", "black"],
     ["resistor:2", "esp:4", "red"],

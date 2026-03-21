@@ -13,14 +13,20 @@ use esp_idf_svc::hal::adc::attenuation::DB_11;
 use esp_idf_svc::hal::adc::Resolution as AdcResolution;
 use esp_idf_svc::hal::adc::oneshot::config::{AdcChannelConfig, Calibration};
 use esp_idf_svc::hal::adc::oneshot::*;
-use esp_idf_svc::hal::adc::ADC1;
 
 fn main() -> Result<(), EspError> {
+    // It is necessary to call this function once. Otherwise, some patches to the runtime
+    // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
+    esp_idf_svc::sys::link_patches();
 
+    // Bind the log crate to the ESP Logging facilities
+    esp_idf_svc::log::EspLogger::initialize_default();
+
+    let start_duty: u32 = 0;
     let peripherals = Peripherals::take()?;
 
     let led_pin = peripherals.pins.gpio4;
-    let potentiometer_iopin = peripherals.pins.gpio14;
+    let pot_pin = peripherals.pins.gpio10;
 
     let ledc_timer = LedcTimerDriver::new(
         peripherals.ledc.timer0, 
@@ -35,61 +41,49 @@ fn main() -> Result<(), EspError> {
         led_pin
     )?;
 
-    let channel_config = AdcChannelConfig {
+    let adc_channel_config = AdcChannelConfig {
         attenuation: DB_11,
         calibration: Calibration::Curve,
         resolution: AdcResolution::Resolution12Bit
     };
 
+    let adc_driver = AdcDriver::new(peripherals.adc1)?;
+
     let mut pot_adc = AdcChannelDriver::new(
-        AdcDriver::new(peripherals.adc2)?,
-        peripherals.pins.gpio14,
-        &channel_config
+        &adc_driver,
+        pot_pin,
+        &adc_channel_config
     )?;
 
-    // It is necessary to call this function once. Otherwise, some patches to the runtime
-    // implemented by esp-idf-sys might not link properly. See https://github.com/esp-rs/esp-idf-template/issues/71
-    esp_idf_svc::sys::link_patches();
-
-    // Bind the log crate to the ESP Logging facilities
-    esp_idf_svc::log::EspLogger::initialize_default();
-
+    
     loop {
         // Read potentiometer ADC value
-        let pot_reading = get_pot_reading(&mut pot_adc)?;
-        
-        
-        // Map ADC reading (0-4095) to PWM duty cycle (0-16383 for 14-bit resolution)
-        let max_duty = (1u32 << 14) - 1; // 16383
-        let duty = ((raw as u64 * max_duty as u64) / 4095u64) as u32;
-        
-        // Set PWM duty cycle
-        pwm_driver.set_duty(duty)?;
-        
-        // Small delay to avoid overwhelming the ADC/PWM
-        std::thread::sleep(std::time::Duration::from_millis(10));
-    }
+        let adc_input = pot_adc.read_raw()?;
+        log::info!("Initial ADC reading -------- {}", adc_input);
 
+        let current_duty = adc_to_pwm_cycle(adc_input)?;
+        log::info!("current duty -------- {}", current_duty);
+
+        for duty in start_duty..current_duty {
+            pwm_driver.set_duty(duty)?;
+        }
+        
+        for reverse_duty in current_duty..start_duty {
+            pwm_driver.set_duty(reverse_duty)?;
+        }
+
+        // std::thread::sleep(std::time::Duration::from_millis(500));
+        std::thread::sleep(std::time::Duration::from_millis(500));
+    }
 }
 
-fn get_pot_reading(pot_adc: &mut AdcChannelDriver<AdcDriver<ADC1>, Gpio14>) -> Result<u64, EspError> {
+
+fn adc_to_pwm_cycle(adc_input: u16) -> Result<u32, EspError> {
     let adc_max = 4095u64; // 12-bit ADC max value
     let pwm_max = ((1u64 << 14) - 1) as u64; // Max duty cycle for 14-bit resolution
     
-   
-    let pot_reading = pot_adc.read_raw()?;
     // Map ADC reading to PWM duty cycle
-    let duty_cycle = (pot_reading as u64 * pwm_max) / adc_max;
+    let mapped_duty_cycle = ((adc_input as u64 * pwm_max) / adc_max) as u32;
     
-    Ok(duty_cycle)
-}
-
-fn setup_pwm_from_potentiometer(pwm: &mut LedcDriver, pot_pin: &PinDriver<'_, Gpio14, Input>) -> Result<(), EspError> {
-    // Read the potentiometer value (this is a placeholder; actual ADC reading code needed)
-    let pot_value = 0; // Replace with actual ADC read
-
-    // Map potentiomete r value to PWM duty cycle
-    let duty_cycle = pot_value as u32; // Adjust mapping as necessary
-
-    pwm.set_duty(duty_cycle)
+    Ok(mapped_duty_cycle)
 }
