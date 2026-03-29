@@ -13,9 +13,11 @@
     {
       "type": "wokwi-membrane-keypad",
       "id": "keypad",
-      "attrs": { "columns": "3" },
       "top": -320,
-      "left": 0
+      "left": 0,
+      "attrs": {
+        "columns": "3"
+      }
     },
     {
       "type": "wokwi-servo",
