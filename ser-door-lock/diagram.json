@@ -24,7 +24,8 @@
       "id": "servo",
       "top": -250,
       "left": 250,
-      "rotate": -90
+      "rotate": -90,
+      "attrs": { "hornColor": "red" }
     }
 
   ],

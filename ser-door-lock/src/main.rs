@@ -1,11 +1,21 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 
 use esp_idf_svc::hal::gpio::*;
+use esp_idf_svc::hal::units::Hertz;
 use esp_idf_svc::hal::peripherals::Peripherals;
 use esp_idf_svc::sys::EspError;
 use esp_idf_svc::hal::delay::FreeRtos;
 
+use esp_idf_svc::hal::ledc::{
+    LedcDriver,
+    LedcTimerDriver,
+    config::TimerConfig,
+    Resolution
+};
+
 static IS_KEYPRESS_PENDING: AtomicBool = AtomicBool::new(false);
+static IS_DOOR_OPEN: AtomicBool = AtomicBool::new(true);
+const KEY_CODE: &str = "9603";
 
 fn main() -> Result<(), EspError> {
     // It is necessary to call this function once. Otherwise, some patches to the runtime
@@ -31,16 +41,34 @@ fn main() -> Result<(), EspError> {
     let col_2 = PinDriver::input(peripherals.pins.gpio9.degrade_input(), Pull::Up)?;
     let col_3 = PinDriver::input(peripherals.pins.gpio46.degrade_input(), Pull::Up)?;
 
+    let servo_pin = peripherals.pins.gpio4;
+
     let mut rows = [row_1, row_2, row_3, row_4];
     let mut columns = [col_1, col_2, col_3];
 
-    for  row in &mut rows {
+    // initialize pwm logic:
+    let timer_driver = LedcTimerDriver::new(
+    peripherals.ledc.timer0,
+    &TimerConfig::default()
+            .frequency(Hertz::from(50))
+            .resolution(Resolution::Bits14),
+    )?;
+
+    let mut servo_pwm_driver = LedcDriver::new(
+        peripherals.ledc.channel0,
+        timer_driver,
+        servo_pin
+    )?;
+
+    let min_duty = 0.05 * servo_pwm_driver.get_max_duty() as f64;
+    servo_pwm_driver.set_duty(min_duty as u32)?;
+    servo_pwm_driver.enable()?;
+
+    for row in &mut rows {
         row.set_low()?;
     }
 
     for col in &mut columns {
-        // col.set_pull(Pull::Up)?;
-
         // interrupt is only triggered when the button is pressed (high to low)
         col.set_interrupt_type(InterruptType::NegEdge)?;
 
@@ -95,6 +123,10 @@ fn main() -> Result<(), EspError> {
                     },
                     "ENTER" => {
                         log::info!("entered pin is {}", key_combination);
+                        log::info!("entered pin is a match {}", key_combination == KEY_CODE);
+                        if key_combination == KEY_CODE {
+                            handle_door_lock(&mut servo_pwm_driver)?;
+                        }
                         key_combination.clear();
                     },
                     _ => {
@@ -105,7 +137,7 @@ fn main() -> Result<(), EspError> {
                 
                 // handle users' long press
                 while columns.iter().any(|c| c.is_low()) {
-                    FreeRtos::delay_ms(200);
+                    FreeRtos::delay_ms(20);
                 }
             }
             
@@ -121,4 +153,25 @@ fn main() -> Result<(), EspError> {
 
 fn keypress_handler () -> () {
     IS_KEYPRESS_PENDING.store(true,  Ordering::SeqCst);
+}
+
+fn handle_door_lock(servo_pwm: &mut LedcDriver<'_>) -> Result<(), EspError> {
+    let pwm_max_duty = servo_pwm.get_max_duty() as f64;
+    let pos_0_degree = (0.05 * pwm_max_duty) as u32; // the duty cycle for 0 degree rotation
+    let pos_90_degree = (0.10 * pwm_max_duty) as u32; // the duty cycle for 180 degree rotation
+
+    if IS_DOOR_OPEN.load(Ordering::Relaxed) {
+        for position in pos_0_degree..pos_90_degree {
+            servo_pwm.set_duty(position as u32)?;
+        }
+        IS_DOOR_OPEN.store(false, Ordering::Relaxed);
+    } else {
+        log::info!("door unlocked --------");
+
+        for position in (pos_0_degree..pos_90_degree).rev() {
+            servo_pwm.set_duty(position as u32)?;
+        }
+        IS_DOOR_OPEN.store(true, Ordering::Relaxed);
+    }
+    Ok(())
 }
