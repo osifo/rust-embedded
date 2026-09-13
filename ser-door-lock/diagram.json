@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "author": "Uri Shaked",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-s3-devkitc-1",
+      "id": "esp",
+      "rotate": 90,
+      "left": 190,
+      "top": -10
+    },
+    {
+      "type": "wokwi-membrane-keypad",
+      "id": "keypad",
+      "top": -320,
+      "left": 0,
+      "attrs": {
+        "columns": "3"
+      }
+    },
+    {
+      "type": "wokwi-servo",
+      "id": "servo",
+      "top": -250,
+      "left": 250,
+      "rotate": -90,
+      "attrs": { "hornColor": "red" }
+    }
+
+  ],
+  "connections": [
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      ""
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      ""
+    ],
+    ["keypad:R1", "esp:14", "green"],
+    ["keypad:R2", "esp:13", "green"],
+    ["keypad:R3", "esp:12", "green"],
+    ["keypad:R4", "esp:11", "green"],
+    ["keypad:C1", "esp:10", "green"],
+    ["keypad:C2", "esp:9", "green"],
+    ["keypad:C3", "esp:46", "green"],
+    ["servo:GND", "esp:GND.2", "black"],
+    ["servo:PWM", "esp:4", "green"],
+    ["servo:V+", "esp:3V3.2", "RED"]
+  ]
+}

@@ -1,0 +1,35 @@
+{
+    "version": 1,
+    "author": "Anosike Osifo",
+    "editor": "wokwi",
+    "parts": [
+      {
+        "type": "board-esp32-s3-devkitc-1",
+        "id": "esp",
+        "top": 0,
+        "left": 0,
+        "attrs": { "builder": "rust-std-esp" }
+      },
+      {
+        "type": "wokwi-led-bar-graph",
+        "id": "ledbar",
+        "top": -95,
+        "left": 150,
+        "rotate": 90,
+        "attrs": { "color": "red", "flip": "1" }
+      }
+    ],
+    "connections": [
+      [ "esp:21", "$serialMonitor:RX", "blue", [] ],
+      [ "esp:20", "$serialMonitor:TX", "blue", [] ],
+      [ "esp:1", "ledbar:A10", "green", [] ],
+      [ "esp:18", "ledbar:A6", "green", [] ],
+      [ "esp:6", "ledbar:A1", "green", [] ],
+      [ "ledbar:C10", "ledbar:C6", "brown", [] ],
+      [ "ledbar:C6", "ledbar:C1", "brown", [] ],
+      ["ledbar:C10", "esp:GND.2", "black", []]
+    ],
+    "serialMonitor": { "display": "terminal" },
+    "dependencies": {}
+  }
+  

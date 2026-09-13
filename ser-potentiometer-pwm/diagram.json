@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "author": "Uri Shaked",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-s3-devkitc-1",
+      "id": "esp",
+      "rotate": 90
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led",
+      "top": -80,
+      "left": 127,
+      "attrs": { "flip": "1" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "resistor",
+      "rotate": 90,
+      "left": 93
+    },
+    {
+      "type": "wokwi-potentiometer",
+      "id": "potentiometer",
+      "top": -170,
+      "left": -70
+    }
+  ],
+  "connections": [
+    ["potentiometer:GND", "esp:GND.1", "black"],
+    ["potentiometer:VCC", "esp:5V", "red"],
+    ["potentiometer:SIG", "esp:10", "green"],
+    ["led:A", "resistor:1", "red"],
+    ["led:C", "esp:GND.2", "black"],
+    ["resistor:2", "esp:4", "red"],
+    [
+      "esp:TX",
+      "$serialMonitor:RX",
+      ""
+    ],
+    [
+      "esp:RX",
+      "$serialMonitor:TX",
+      ""
+    ]
+  ]
+}

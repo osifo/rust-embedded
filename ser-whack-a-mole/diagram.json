@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "author": "Anosike Osifo",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "board-esp32-s3-devkitc-1",
+      "id": "esp",
+      "top": 50,
+      "left": 0,
+      "rotate": 90,
+      "attrs": { "builder": "rust-std-esp"}
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "button",
+      "top": 185,
+      "left": -225,
+      "rotate": 0,
+      "attrs": { "color": "brown", "flip": "1" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-display",
+      "top": 120,
+      "left": -220,
+      "rotate": -90,
+      "attrs": { "color": "blue" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "resistor-display",
+      "top": 134.45,
+      "left": -163.75,
+      "rotate": 0,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-success",
+      "top": 0,
+      "left": -55,
+      "attrs": { "color": "green" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "resistor-success",
+      "top": 75,
+      "left": -42,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    },
+    {
+      "type": "wokwi-led",
+      "id": "led-failure",
+      "top": 0,
+      "left": 100,
+      "attrs": { "color": "red", "flip": "1" }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "resistor-failure",
+      "top": 75,
+      "left": 65,
+      "rotate": 90,
+      "attrs": { "value": "1000" }
+    }
+  ],
+  "connections": [
+    [ "button:1.r", "esp:21", "green", [] ],
+    [ "button:2.r", "esp:GND.4", "black", [] ],
+    
+    [ "led-display:A", "resistor-display:1", "blue" ],
+    [ "resistor-display:2", "esp:14", "red" ],
+    [ "led-display:C", "esp:GND.1", "black" ],
+
+    [ "led-success:A", "resistor-success:1", "green" ],
+    [ "led-success:C", "esp:GND.3", "black" ],
+    [ "resistor-success:2", "esp:12", "red" ],
+
+    [ "led-failure:A", "resistor-failure:1", "red" ],
+    [ "led-failure:C", "esp:GND.2", "black" ],
+    [ "resistor-failure:2", "esp:7", "red" ]
+  ],
+  "serialMonitor": { "display": "terminal" },
+  "dependencies": {}
+}
