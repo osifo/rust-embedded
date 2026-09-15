@@ -1,4 +1,5 @@
 mod error;
+mod date_time;
 
 use esp_idf_svc::hal::delay::{FreeRtos, BLOCK};
 use esp_idf_svc::hal::i2c::*;
@@ -29,47 +30,6 @@ fn main() -> Result<(), AppError> {
     let i2c_config = I2cConfig::new().baudrate(KiloHertz::from(100).into());
         // .source_clock(config::SourceClock::Crystal);
 
-    enum DS3231 {
-        Seconds,
-        Minutes,
-        Hours,
-        Day,
-        Date,
-        Month,
-        Year
-    }
-
-    enum DAY {
-        Sun = 1,
-        Mon = 2,
-        Tue = 3,
-        Wed = 4,
-        Thu = 5,
-        Fri = 6,
-        Sat = 7
-    }
-
-    struct DateTime {
-        sec: u8,
-        min: u8,
-        hrs: u8,
-        day: u8,
-        date: u8,
-        month: u8,
-        year: u8
-    }
-
-    let start_date = DateTime {
-        sec: 0,
-        min: 46,
-        hrs: 14,
-        day: DAY::Sun as u8,
-        date: 13,
-        month: 9,
-        year: 26,
-    };
-
-        
     let mut ds3231_rtc: I2cDriver<'_> = I2cDriver::new(
         i2c,
         sda,
@@ -77,48 +37,44 @@ fn main() -> Result<(), AppError> {
         &i2c_config
     ).unwrap();
 
-    // seed the RTC with time data
+    let seed_timestamp = date_time::DateTime {
+        sec: 0,
+        min: 0,
+        hrs: 0,
+        day: date_time::DAY::Tue as u8,
+        date: 15,
+        month: 9,
+        year: 26
+    };
 
-    let secs: [u8; 1] = BcdNumber::new(start_date.sec)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Seconds as u8, secs[0]], BLOCK)?;
-
-    let mins: [u8; 1] = BcdNumber::new(start_date.min)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Minutes as u8, mins[0]], BLOCK)?;
-
-    let hours: [u8; 1] = BcdNumber::new(start_date.hrs)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Hours as u8, hours[0]], BLOCK)?;
-
-    let day_of_week: [u8; 1] = BcdNumber::new(start_date.day)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Day as u8, day_of_week[0]], BLOCK)?;
-
-    let day_of_month: [u8; 1] = BcdNumber::new(start_date.date)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Date as u8, day_of_month[0]], BLOCK)?;
-   
-    let month: [u8; 1] = BcdNumber::new(start_date.month)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Month as u8, month[0]], BLOCK)?;
+    let mut seed_buf: [u8; 8] = [0_u8; 8];
     
-    let year: [u8; 1] = BcdNumber::new(start_date.year)?.bcd_bytes();
-    ds3231_rtc.write(DS3231_RTC_ADDR, &[DS3231::Year as u8, year[0]], BLOCK)?;
-    
-    log::info!("Hello, world!");
+    for (idx, &field) in seed_timestamp.as_fields().iter().enumerate() {
+        let bcd_value: [u8; 1] = BcdNumber::new(field)?.bcd_bytes();
+        seed_buf[idx + 1] = bcd_value[0];
+    }
+    ds3231_rtc.write(DS3231_RTC_ADDR, &seed_buf, BLOCK)?;
 
+
+    // Bits to mask off per register: seconds has a clock-halt flag in bit 7,
+    // hours has 12/24-hour mode + AM/PM bits. Everything else is a no-op mask.
+    const MASKS: [u8; 7] = [0x7f, 0xff, 0x3f, 0xff, 0xff, 0xff, 0xff];
     loop {
         // this array would hold the data read from the RTC.
-        let mut data: [u8; 7] = [0_u8; 7];
+        let mut data_buf: [u8; 7] = [0_u8; 7];
 
-        ds3231_rtc.write(DS3231_RTC_ADDR, &[0_u8], BLOCK)?;
-        ds3231_rtc.read(DS3231_RTC_ADDR, &mut data, BLOCK)?;
+        ds3231_rtc.write_read(DS3231_RTC_ADDR, &[date_time::DS3231::Seconds as u8], &mut data_buf, BLOCK);
 
-        println!("{:?}", data);
+        println!("{:?}", data_buf);
+        
+        let mut current_date = [0_u8; 7];
+        for (idx, value) in data_buf.iter().enumerate() {
+            current_date[idx] = BcdNumber::from_bcd_bytes([value & MASKS[idx]])?.value::<u8>();
+        }
+        let [secs, mins, hrs, day, date, month, year] = current_date;
 
-        let secs = BcdNumber::from_bcd_bytes([data[0] & 0x7f])?.value::<u8>(); // added the hex to remove unnecessary data
-        let mins = BcdNumber::from_bcd_bytes([data[1]])?.value::<u8>();
-        let hours = BcdNumber::from_bcd_bytes([data[2] & 0x3f])?.value::<u8>();
-        let date = BcdNumber::from_bcd_bytes([data[4]])?.value::<u8>();
-        let month = BcdNumber::from_bcd_bytes([data[5]])?.value::<u8>();
-        let year = BcdNumber::from_bcd_bytes([data[6]])?.value::<u8>();
 
-        let day_of_week =  match BcdNumber::from_bcd_bytes([data[3]])?.value::<u8>() {
+        let day_of_week: &str =  match day {
             1 => "Sunday",
             2 => "Monday",
             3 => "Tuesday",
@@ -131,7 +87,7 @@ fn main() -> Result<(), AppError> {
 
         println!(
             "{} {}/{}/20{} {:02}:{:02}:{:02}", 
-            day_of_week, date, month, year, hours, mins, secs
+            day_of_week, date, month, year, hrs, mins, secs
         );
 
         FreeRtos::delay_ms(1000_u32);
