@@ -12,8 +12,17 @@ use esp_idf_svc::wifi::{
     EspWifi,
 };
 
-const WIFI_SSID: &str = "<wifi name>";
-const WIFI_PASSWORD: &str = "<password>";
+use esp_idf_svc::http::client::{
+    Configuration as HttpConfig,
+    EspHttpConnection
+};
+use esp_idf_svc::http::Method;
+
+
+const WIFI_SSID: &str = "my outside.co24";
+const WIFI_PASSWORD: &str = "tilte_labs_001";
+// const WIFI_SSID: &str = "<wifi name>";
+// const WIFI_PASSWORD: &str = "<password>";
 
 fn main() -> Result<(), EspError> {
     // It is necessary to call this function once. Otherwise, some patches to the runtime
@@ -58,10 +67,37 @@ fn main() -> Result<(), EspError> {
     }
 
     log::info!("Wifi is now connected.");
+    authenticate_device();
 
     // Ok(())
 
     loop {
         std::thread::sleep(Duration::from_secs(10));
     } 
+}
+
+fn authenticate_device() -> Result<(), EspError> {
+    // setup http client
+    let base_url: &str = "http://192.168.1.205:3000/api/v1";
+    let request_endpoint: &str = &String::from(format!("{}/users", base_url));
+
+    let mut http_connection = EspHttpConnection::new(&HttpConfig {
+        use_global_ca_store:  true,
+        crt_bundle_attach: Some(esp_idf_svc::sys::esp_crt_bundle_attach),
+        ..Default::default()
+    })?;
+
+    let _request = http_connection.initiate_request(
+        Method::Get,
+        request_endpoint,
+        &[]
+    );
+
+    let _response  = http_connection.initiate_response()?;
+    let response_status = http_connection.status();
+
+    log::info!("===== response status is {} ======= \n", response_status);
+
+    Ok(())
+
 }
