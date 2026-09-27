@@ -10,12 +10,12 @@ use esp_idf_svc::wifi::{
 use esp_idf_svc::eventloop::EspSystemEventLoop;
 use esp_idf_svc::nvs::EspDefaultNvsPartition;
 use esp_idf_svc::hal::peripherals::Peripherals;
-use esp_idf_svc::sys::EspError;
+// use esp_idf_svc::sys::EspError;
 
-use esp_idf_svc::http::client::{
-    Configuration as HttpClientConfig,
-    EspHttpConnection
-};
+// use esp_idf_svc::http::client::{
+//     Configuration as HttpClientConfig,
+//     EspHttpConnection
+// };
 // use esp_idf_svc::http::Method;
 use esp_idf_svc::http::server::{
     Configuration as HttpServerConfig,
@@ -23,6 +23,8 @@ use esp_idf_svc::http::server::{
     Method,
 };
 use std::{thread::sleep, time::Duration};
+
+// use esp_idf_svc::mdns::EspMdns;
 
 const WIFI_SSID: &str = "my outside.co24";
 const WIFI_PASSWORD: &str = "tilte_labs_001";
@@ -38,6 +40,7 @@ fn main() -> anyhow::Result<()> {
     log::info!("Hello, world!");
 
     let _wifi = setup_wifi()?;
+    // let _mdns = setup_mdns()?;
     let _server = setup_http_server()?;
 
     loop {
@@ -117,3 +120,9 @@ fn index_html() -> String {
     )
 }
 
+// fn setup_mdns() -> Result<EspMdns, anyhow::Error> {
+//     let mdns = EspMdns::take()?;
+//     mdns.set_hostname("myhuas");
+//     mdns.set_instance_name("You Personal MyHaus Dashboard");
+//     Ok(mdns)
+// }
